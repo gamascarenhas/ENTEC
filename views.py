@@ -3,9 +3,6 @@ from main import app
 
 #rotas
 @app.route("/")
-def index():
-    return render_template("index.html")
-
 @app.route("/login")
 def login():
     return render_template("login.html")
