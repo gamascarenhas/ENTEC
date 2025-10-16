@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Página Avaliação</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style-avaliacao.css') }}"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <div class="box">
+        <img
+          src="{{ url_for('static', filename='img/imagem.webp')}}"
+          alt="Imagem
+        Produto"
+        />
+        <h1>
+          Obrigado pela preferência
+          <span id="nomeCliente">nomeCliente</span>!
+        </h1>
+        <p>Sua compra foi concluída com sucesso.</p>
+      </div>
+
+      <div>
+        <h2>Queremos saber sua opinião!</h2>
+        <p>Avalie como foi sua experiência de compra:</p>
+        <div class="container-stars">
+          <span class="star" data-value="1">★</span>
+          <span class="star" data-value="2">★</span>
+          <span class="star" data-value="3">★</span>
+          <span class="star" data-value="4">★</span>
+          <span class="star" data-value="5">★</span>
+        </div>
+        <textarea
+          id="observacoes"
+          maxlength="300"
+          placeholder="Deixe um comentário (opcional)..."
+        ></textarea>
+        <a href="" class="bnt" id="enviarAvaliacao">Avaliar!</a>
+      </div>
+      <script src="{{ url_for('static', filename='js/enviarAvaliacao.js')}}"></script>
+      <script src="{{ url_for('static', filename='js/nomeCliente.js')}}"></script>
+    </div>
+  </body>
+</html>
