@@ -33,9 +33,21 @@ def receber_avaliacao():
     data = request.get_json()
     print("Avaliação recebida:", data)
 
-    # Aqui você pode salvar no banco de dados se quiser
-    # Mas, a baixo salva em um arquivo temporário só pra testar
-    with open("avaliacoes.txt", "a", encoding="utf-8") as f:
-        f.write(str(data) + "\n")
+    import json, os
+
+    arquivo = "avaliacoes.json"
+    avaliacoes = []
+
+    if os.path.exists(arquivo):
+        with open(arquivo, "r", encoding="utf-8") as f:
+            try:
+                avaliacoes = json.load(f)
+            except json.JSONDecodeError:
+                avaliacoes = []
+
+    avaliacoes.append(data)
+
+    with open(arquivo, "w", encoding="utf-8") as f:
+        json.dump(avaliacoes, f, ensure_ascii=False, indent=4)
 
     return jsonify({"status": "ok"}), 200
