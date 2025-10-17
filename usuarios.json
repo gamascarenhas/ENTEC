@@ -8,5 +8,10 @@
         "nome": "Vítor Teste 2",
         "email": "vitoralmeidaprado@edu.uniube.br",
         "senha": "OutraSenha00@"
+    },
+    {
+        "nome": "teste",
+        "email": "teste@gmail.com",
+        "senha": "Teste2121!"
     }
 ]

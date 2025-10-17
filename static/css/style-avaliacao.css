@@ -20,9 +20,18 @@ body {
   justify-content: center;
 }
 
+.voltar {
+  font-size: 16px;
+  font-weight: 600;
+  color: #5e2bff;
+  margin-block-end: 20px;
+}
+
 .box {
   background: linear-gradient(315deg, #c04cfd, #5e2bff) padding-box;
   border-radius: 35px;
+  border-bottom-left-radius: 0px;
+  border-top-right-radius: 0px;
   max-width: 500px;
   padding: 10px;
   margin-block-end: 10px;

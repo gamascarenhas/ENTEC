@@ -29,80 +29,29 @@ header a:hover {
 
 .body {
   display: flex;
-  justify-content: space-between;
-}
-
-nav {
-  border: 1px solid #313131;
-  width: 100%;
-  max-width: 350px;
-  padding: 10px;
-  margin-inline-end: 10px;
-  border-radius: 20px;
-  background-color: #0c0c0c;
-}
-
-nav a {
-  display: block;
-  text-align: center;
-  border-radius: 10px;
-  padding-block: 20px;
-  margin-block: 10px;
-  text-decoration: none;
-}
-
-nav h2 {
-  display: flex;
-  padding-block-start: 15px;
-  padding-block-end: 10px;
-  justify-content: center;
-}
-
-nav a:hover {
-  text-decoration: underline;
-  background-color: #191919;
-}
-
-.pagina-selecionada {
-  border: 1px solid #313131;
-  background-color: #000000;
+  flex-direction: column;
 }
 
 .content {
+  margin-block-start: 25px;
   border: 1px solid #313131;
   width: 100%;
-  max-width: 845px;
   padding: 25px;
   border-radius: 20px;
   background-color: #0c0c0c;
 }
 
-@media (max-width: 1220px) {
-  header {
-    padding-inline: 10px;
-  }
+.content-inline {
+  display: flex;
+  justify-content: space-between;
+  flex-direction: row;
 }
 
-@media (max-width: 850px) {
-  .body {
-    display: flex;
-    flex-direction: column;
-  }
-
-  nav {
-    width: 100%;
-    max-width: 850px;
-    padding-block: 0px;
-    margin-block-end: 10px;
-  }
-
-  nav a {
-    display: inline-block;
-    padding: 20px;
-  }
-
-  nav h2 {
-    display: inline-block;
-    margin-inline: 15px;
-  }
+.content-row {
+  border: 1px solid #313131;
+  width: 100%;
+  max-width: 390px;
+  background-color: #0c0c0c;
+  border-radius: 20px;
+  padding: 25px;
 }
