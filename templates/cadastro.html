@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Página Principal</title>
+    <title>Cadastro de Usuários</title>
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/style.css') }}"
@@ -16,14 +16,14 @@
   <body>
     <div class="container-login">
       <div class="content-login">
-        <h1>Login</h1>
-        <form method="POST" action="login.php">
-          <input type="text" name="cpf" placeholder="Cpf" required />
+        <h1>Cadastro</h1>
+        <form method="POST" action="/cadastro">
+          <input type="text" name="email" placeholder="Email" required />
+          <input type="text" name="nome" placeholder="Nome" required />
           <input type="password" name="senha" placeholder="Senha" required />
-          <button type="submit">Entrar</button>
-          <a href="">Esqueci a senha</a>
-          <a href="/cadastro">Cadastrar-se</a>
+          <button type="submit">Cadastrar</button>
         </form>
+        <a href="/">Voltar a tela inicial</a>
       </div>
     </div>
   </body>
