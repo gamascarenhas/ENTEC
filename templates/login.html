@@ -12,14 +12,40 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='css/style-login.css') }}"
     />
+    <style>
+      /* estilo mínimo para destacar erro caso não tenha no CSS */
+      .error { color: #b00020; font-size: 0.9rem; margin-top: 6px; display:block; }
+      input.invalid { border-color: #b00020; box-shadow: 0 0 0 3px rgba(176,0,32,0.08); }
+    </style>
   </head>
   <body>
     <div class="container-login">
       <div class="content-login">
         <h1>Login</h1>
-        <form method="POST" action="login.php">
-          <input type="text" name="email" placeholder="Email" required />
-          <input type="password" name="senha" placeholder="Senha" required />
+        <form method="POST" action="{{ url_for('login') }}">
+          <input
+            type="text"
+            name="email"
+            placeholder="Email"
+            required
+            value="{{ email|default('') }}"
+            class="{% if error_field == 'email' %}invalid{% endif %}"
+          />
+          {% if error_field == 'email' %}
+            <span class="error">{{ message }}</span>
+          {% endif %}
+
+          <input
+            type="password"
+            name="senha"
+            placeholder="Senha"
+            required
+            class="{% if error_field == 'senha' %}invalid{% endif %}"
+          />
+          {% if error_field == 'senha' %}
+            <span class="error">{{ message }}</span>
+          {% endif %}
+
           <button type="submit">Entrar</button>
           <a href="/cadastro">Cadastrar-se</a>
         </form>
