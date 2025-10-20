@@ -15,12 +15,12 @@ def juntar_avaliacoes_em_pedidos(avaliacoes_file, pedidos_file, output_file="dat
             raise ValueError("Os dois arquivos devem conter listas JSON.")
 
         
-        avaliacoes_dict = {a["Id"]: a for a in avaliacoes}
+        avaliacoes_dict = {a["id"]: a for a in avaliacoes}
 
       
         pedidos_atualizados = []
         for pedido in pedidos:
-            pedido_id = pedido.get("Id")
+            pedido_id = pedido.get("id")
             avaliacao = avaliacoes_dict.get(pedido_id)
 
             if avaliacao:
@@ -40,4 +40,4 @@ def juntar_avaliacoes_em_pedidos(avaliacoes_file, pedidos_file, output_file="dat
         print("Erro:", e)
 
 
-juntar_avaliacoes_em_pedidos("valiações.json", "pedidos.json")
+juntar_avaliacoes_em_pedidos("avaliacoes.json", "pedidos.json")

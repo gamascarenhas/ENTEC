@@ -19,6 +19,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // --- Função para gerar ID único ---
+  function gerarIdUnico() {
+    let ultimoId = parseInt(localStorage.getItem("ultimoIdAvaliacao") || "0");
+    const novoId = ultimoId + 1;
+    localStorage.setItem("ultimoIdAvaliacao", novoId);
+    return novoId;
+  }
+
   // --- Envio da avaliação ---
   botaoEnviar.addEventListener("click", (e) => {
     e.preventDefault();
@@ -30,6 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     const avaliacao = {
+      id: gerarIdUnico(),
       estrelas: valorSelecionado,
       observacao: observacao || null,
       data_avaliacao: dataAvaliacao,
