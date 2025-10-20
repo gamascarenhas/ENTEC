@@ -132,6 +132,8 @@
     "Telefone": "34996666467",
     "DataPedido": "2025-10-16T14:22:53.0421984",
     "Pizzas": [],
-    "Total": 0
+    "Total": 0,
+    "estrelas": 5,
+    "observacao": "teste"
   }
 ]

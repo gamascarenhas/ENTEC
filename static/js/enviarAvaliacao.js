@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     const avaliacao = {
-      id: gerarIdUnico(),
+      Id: gerarIdUnico(),
       estrelas: valorSelecionado,
       observacao: observacao || null,
       data_avaliacao: dataAvaliacao,

@@ -1,6 +1,6 @@
 [
     {
-        "id": 1,
+        "Id": 1,
         "estrelas": 5,
         "observacao": "teste",
         "data_avaliacao": "20/10/2025, 15:07"
