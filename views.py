@@ -10,9 +10,9 @@ import json
 def home():
     return render_template("home.html")
 
-@app.route("/avaliacao")
-def paginaAvaliacao():
-    return render_template("paginaAvaliacao.html")
+@app.route("/avaliacao/<int:pedido_id>")
+def paginaAvaliacao(pedido_id):
+    return render_template("paginaAvaliacao.html", pedido_id=pedido_id)
 
 @app.route("/avaliacao/sucesso")
 def paginaSucesso():
@@ -29,7 +29,8 @@ def receber_avaliacao():
 
     import json, os
 
-    arquivo = "avaliacoes.json"
+    pasta_json = os.path.join(os.getcwd(), "json")
+    arquivo = os.path.join(pasta_json, "avaliacoes.json")
     avaliacoes = []
 
     if os.path.exists(arquivo):
@@ -39,7 +40,8 @@ def receber_avaliacao():
             except json.JSONDecodeError:
                 avaliacoes = []
 
-    avaliacoes.append(data)
+    # Inserir a nova avaliação no início da lista
+    avaliacoes.insert(0, data)
 
     with open(arquivo, "w", encoding="utf-8") as f:
         json.dump(avaliacoes, f, ensure_ascii=False, indent=4)

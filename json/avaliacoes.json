@@ -1,0 +1,30 @@
+[
+    {
+        "Id": 12,
+        "pedido_id": 39,
+        "estrelas": 5,
+        "observacao": "muito bom",
+        "data_avaliacao": "22/10/2025, 11:58"
+    },
+    {
+        "Id": 11,
+        "pedido_id": 27,
+        "estrelas": 5,
+        "observacao": "27",
+        "data_avaliacao": "22/10/2025, 11:09"
+    },
+    {
+        "Id": 10,
+        "pedido_id": 26,
+        "estrelas": 4,
+        "observacao": "26",
+        "data_avaliacao": "22/10/2025, 11:08"
+    },
+    {
+        "Id": 9,
+        "pedido_id": 24,
+        "estrelas": 5,
+        "observacao": "teste",
+        "data_avaliacao": "22/10/2025, 10:14"
+    }
+]

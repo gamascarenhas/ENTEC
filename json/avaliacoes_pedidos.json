@@ -1,0 +1,42 @@
+[
+    {
+        "Id": 12,
+        "NomeCliente": "Gabriel Gonçalves Mascarenhas",
+        "Telefone": "34998786045",
+        "Email": "gabrieloreno.gm@gmail.com",
+        "Endereco": "Rua Luis Abrão, 219",
+        "estrelas": 5,
+        "observacao": "muito bom",
+        "data_avaliacao": "22/10/2025, 11:58"
+    },
+    {
+        "Id": 11,
+        "NomeCliente": "Gabriel Gonçalves Mascarenhas",
+        "Telefone": "34998786045",
+        "Email": "gabrieloreno.gm@gmail.com",
+        "Endereco": "Rua Luis Abrão, 219",
+        "estrelas": 5,
+        "observacao": "27",
+        "data_avaliacao": "22/10/2025, 11:09"
+    },
+    {
+        "Id": 10,
+        "NomeCliente": "Gabriel Gonçalves Mascarenhas",
+        "Telefone": "34998786045",
+        "Email": "gabrieloreno.gm@gmail.com",
+        "Endereco": "Rua Luis Abrão, 219",
+        "estrelas": 4,
+        "observacao": "26",
+        "data_avaliacao": "22/10/2025, 11:08"
+    },
+    {
+        "Id": 9,
+        "NomeCliente": "Gabriel Gonçalves Mascarenhas",
+        "Telefone": "",
+        "Email": "",
+        "Endereco": "Rua Luis Abrão, 219",
+        "estrelas": 5,
+        "observacao": "teste",
+        "data_avaliacao": "22/10/2025, 10:14"
+    }
+]

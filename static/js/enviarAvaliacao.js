@@ -27,6 +27,12 @@ document.addEventListener("DOMContentLoaded", () => {
     return novoId;
   }
 
+  // --- Pegar o pedidoId da URL ---
+  const caminho = window.location.pathname; // "/avaliacao/105"
+  const partes = caminho.split("/");
+  const pedidoId = parseInt(partes[2]); // índice 2 = "105"
+  console.log("Pedido ID:", pedidoId);
+
   // --- Envio da avaliação ---
   botaoEnviar.addEventListener("click", (e) => {
     e.preventDefault();
@@ -39,6 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const avaliacao = {
       Id: gerarIdUnico(),
+      pedido_id: pedidoId, // adicionado aqui
       estrelas: valorSelecionado,
       observacao: observacao || null,
       data_avaliacao: dataAvaliacao,
@@ -54,15 +61,15 @@ document.addEventListener("DOMContentLoaded", () => {
       .then((res) => {
         if (res.ok) {
           console.log("Enviado com sucesso!");
-          window.location.href = "/avaliacao/sucesso"; // rota do Flask
+          window.location.href = "/avaliacao/sucesso";
         } else {
           console.error("Erro na resposta:", res.status);
-          window.location.href = "/avaliacao/erro"; // rota do Flask
+          window.location.href = "/avaliacao/erro";
         }
       })
       .catch((err) => {
         console.error("Erro ao enviar:", err);
-        window.location.href = "/avaliacao/erro"; // erro de rede
+        window.location.href = "/avaliacao/erro";
       });
   });
 });
