@@ -1,4 +1,5 @@
 from flask import request, jsonify, render_template, redirect, url_for
+import subprocess  # <--- assim é que importa
 from main import app
 import json
 
@@ -118,6 +119,41 @@ def cadastrar_usuario():
 
     return "<script>alert('Usuário cadastrado com sucesso!'); window.location.href='/login';</script>"
 
+@app.route("/api/avaliacoes_pedidos")
+def api_avaliacoes_pedidos():
+    caminho = os.path.join(os.getcwd(), "json", "avaliacoes_pedidos.json")
+    if not os.path.exists(caminho):
+        return jsonify({"erro": "Arquivo não encontrado"}), 404
+
+    with open(caminho, "r", encoding="utf-8") as f:
+        dados = json.load(f)
+
+    return jsonify(dados)
+
+@app.route("/api/rodar_script")
+def rodar_script():
+    try:
+        caminho_script = os.path.join(os.getcwd(), "json", "script.py")
+
+        # Executa o script Python
+        resultado = subprocess.run(
+            ["python", caminho_script],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+
+        return jsonify({
+            "mensagem": "Script executado com sucesso!",
+            "saida": resultado.stdout
+        })
+
+    except subprocess.CalledProcessError as e:
+        return jsonify({
+            "erro": "Erro ao executar o script",
+            "detalhes": e.stderr
+        }), 500
+    
 # ------Verificao de login--------------
 
 @app.route("/", methods=['GET', 'POST'])

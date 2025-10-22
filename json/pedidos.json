@@ -1,5 +1,12 @@
 ﻿[
   {
+    "Id": 43,
+    "NomeCliente": "Gabriel Gonçalves Mascarenhas",
+    "Telefone": "34998786045",
+    "Email": "gabrieloreno.gm@gmail.com",
+    "Endereco": "Rua Luis Abrão, 219"
+  },
+  {
     "Id": 42,
     "NomeCliente": "Gabriel Gonçalves Mascarenhas",
     "Telefone": "34998786045",
