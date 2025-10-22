@@ -7,7 +7,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    /* O CSS permanece EXATAMENTE igual - não alterei nada */
+    
     :root {
       --primary: #1a1f36;
       --secondary: #2d3748;
@@ -542,7 +542,7 @@
       <div class="charts-grid">
         <div class="chart-container">
           <div class="chart-header">
-            <div class="chart-title">Pedidos por Cliente (Top 10)</div>
+            <div class="chart-title">Satisfação dos clientes</div>
             <div class="chart-actions">
               <button title="Download"><i class="fas fa-download"></i></button>
               <button title="Compartilhar"><i class="fas fa-share-alt"></i></button>
@@ -626,392 +626,229 @@
   </div>
 
   <script>
-    // Configuração do arquivo JSON
-    const JSON_CONFIG = {
-      filename: 'pedidos.json',
-      path: './pedidos.json'  
-    };
+  const JSON_FILE = 'data.json';
+  let chartSatisfacao = null;
+  let chartTimeline = null;
 
-    // Variáveis globais para os gráficos
-    let ordersByCustomerChart, timelineChart;
-    let currentData = [];
+  document.addEventListener('DOMContentLoaded', () => {
+    loadDashboardData();
 
-    // Inicialização do dashboard
-    document.addEventListener('DOMContentLoaded', function() {
-      console.log('Iniciando dashboard...');
-      loadDashboardData();
-      
-      // Configurar event listeners
-      document.getElementById('refreshBtn').addEventListener('click', loadDashboardData);
-      document.getElementById('dateFilter').addEventListener('change', loadDashboardData);
+    document.getElementById('refreshBtn').addEventListener('click', loadDashboardData);
+  });
+
+  // === FUNÇÃO PRINCIPAL ===
+  async function loadDashboardData() {
+    try {
+      showLoading();
+      hideError();
+
+      const response = await fetch(JSON_FILE);
+      if (!response.ok) throw new Error(`Erro ${response.status}: ${response.statusText}`);
+
+      const pedidos = await response.json();
+      if (!Array.isArray(pedidos)) throw new Error('Formato inválido no JSON');
+
+      processData(pedidos);
+    } catch (err) {
+      showError(
+        'Erro ao Carregar Dados',
+        `Não foi possível carregar o arquivo "${JSON_FILE}".`,
+        err.message
+      );
+    } finally {
+      hideLoading();
+    }
+  }
+
+  // === PROCESSAR DADOS ===
+  function processData(pedidos) {
+    if (!pedidos || pedidos.length === 0) {
+      showError('Sem Dados', 'Não há dados disponíveis para exibir.');
+      return;
+    }
+
+    updateStatsCards(pedidos);
+    createChartSatisfacao(pedidos);
+    createChartTimeline(pedidos);
+    populateRecentOrders(pedidos);
+    updateInsights(pedidos);
+  }
+
+  // === CARDS DE ESTATÍSTICAS ===
+  function updateStatsCards(pedidos) {
+    const totalOrders = pedidos.length;
+    const uniqueCustomers = new Set(pedidos.map(p => p.NomeCliente)).size;
+
+    document.getElementById('totalOrders').textContent = totalOrders;
+    document.getElementById('uniqueCustomers').textContent = uniqueCustomers;
+    document.getElementById('ordersPerMonth').textContent = (totalOrders / 12).toFixed(1);
+
+    const freq = {};
+    pedidos.forEach(p => { freq[p.NomeCliente] = (freq[p.NomeCliente] || 0) + 1; });
+    const topCustomer = Object.entries(freq).sort((a, b) => b[1] - a[1])[0];
+    document.getElementById('topCustomer').textContent = topCustomer ? topCustomer[0] : '-';
+  }
+
+  // === GRÁFICO DE SATISFAÇÃO (⭐) ===
+  function createChartSatisfacao(pedidos) {
+    const ctx = document.getElementById('ordersByCustomerChart');
+    if (!ctx) return;
+
+    const counts = { 1:0, 2:0, 3:0, 4:0, 5:0 };
+    pedidos.forEach(p => {
+      const e = parseInt(p.estrelas);
+      if (!isNaN(e) && e >= 1 && e <= 5) counts[e]++;
     });
 
-    // Função principal para carregar dados do JSON
-    async function loadDashboardData() {
-      try {
-        showLoading();
-        hideError();
-        
-        console.log('Tentando carregar arquivo JSON:', JSON_CONFIG.path);
-        
-        // Tentar buscar dados do arquivo JSON
-        const response = await fetch(JSON_CONFIG.path);
-        
-        if (!response.ok) {
-          throw new Error(`Erro ao carregar arquivo: ${response.status} ${response.statusText}`);
-        }
-        
-        const pedidos = await response.json();
-        console.log('Dados carregados do JSON:', pedidos);
-        
-        // Verificar se é um array
-        if (!Array.isArray(pedidos)) {
-          throw new Error('Formato inválido: O JSON deve conter um array de pedidos');
-        }
-        
-        currentData = pedidos;
-        processData(pedidos);
-        
-      } catch (error) {
-        console.error('Erro ao carregar dados do JSON:', error);
-        showError(
-          'Erro ao Carregar Dados', 
-          `Não foi possível carregar o arquivo "${JSON_CONFIG.filename}".`,
-          error.toString()
-        );
-      } finally {
-        hideLoading();
-      }
-    }
+    const labels = ['1⭐', '2⭐⭐', '3⭐⭐⭐', '4⭐⭐⭐⭐', '5⭐⭐⭐⭐⭐'];
+    const data = [1,2,3,4,5].map(n => counts[n]);
 
-    // Processar dados e atualizar a interface
-    function processData(pedidos) {
-      if (!pedidos || pedidos.length === 0) {
-        showError('Sem Dados', 'Não há dados disponíveis para exibir.');
-        return;
-      }
-      
-      // Atualizar cards de estatísticas
-      updateStatsCards(pedidos);
-      
-      // Criar/atualizar gráficos
-      createOrdersByCustomerChart(pedidos);
-      createTimelineChart(pedidos);
-      
-      // Preencher lista de pedidos recentes
-      populateRecentOrders(pedidos);
-      
-      // Atualizar insights
-      updateInsights(pedidos);
-    }
+    if (chartSatisfacao) chartSatisfacao.destroy();
 
-    // Atualizar os cards de estatísticas
-    function updateStatsCards(pedidos) {
-      // Calcular totais
-      const totalOrders = pedidos.length;
-      
-      // Contar clientes únicos
-      const uniqueCustomers = [...new Set(pedidos.map(p => p.NomeCliente))].length;
-      
-      // Calcular pedidos por mês (média)
-      const ordersByMonth = calculateOrdersByMonth(pedidos);
-      const avgOrdersPerMonth = ordersByMonth.length > 0 ? 
-        ordersByMonth.reduce((sum, month) => sum + month.count, 0) / ordersByMonth.length : 0;
-      
-      // Encontrar cliente mais frequente
-      const customerFrequency = {};
-      pedidos.forEach(pedido => {
-        const cliente = pedido.NomeCliente;
-        customerFrequency[cliente] = (customerFrequency[cliente] || 0) + 1;
-      });
-      
-      const topCustomer = Object.entries(customerFrequency)
-        .sort((a, b) => b[1] - a[1])[0];
-      
-      // Atualizar elementos DOM
-      document.getElementById('totalOrders').textContent = totalOrders.toLocaleString();
-      document.getElementById('uniqueCustomers').textContent = uniqueCustomers.toLocaleString();
-      document.getElementById('ordersPerMonth').textContent = avgOrdersPerMonth.toFixed(1);
-      document.getElementById('topCustomer').textContent = topCustomer ? 
-        (topCustomer[0].length > 10 ? topCustomer[0].substring(0, 10) + '...' : topCustomer[0]) : '-';
-    }
-
-    // Calcular pedidos por mês
-    function calculateOrdersByMonth(pedidos) {
-      const monthCounts = {};
-      
-      pedidos.forEach(pedido => {
-        if (pedido.DataPedido) {
-          const date = new Date(pedido.DataPedido);
-          const monthYear = `${date.getMonth() + 1}/${date.getFullYear()}`;
-          monthCounts[monthYear] = (monthCounts[monthYear] || 0) + 1;
-        }
-      });
-      
-      return Object.entries(monthCounts)
-        .map(([month, count]) => ({ month, count }))
-        .sort((a, b) => {
-          const [aMonth, aYear] = a.month.split('/').map(Number);
-          const [bMonth, bYear] = b.month.split('/').map(Number);
-          return aYear - bYear || aMonth - bMonth;
-        });
-    }
-
-    // Criar gráfico de pedidos por cliente
-    function createOrdersByCustomerChart(pedidos) {
-      const ctx = document.getElementById('ordersByCustomerChart').getContext('2d');
-      
-      // Contar pedidos por cliente
-      const ordersByCustomer = {};
-      pedidos.forEach(pedido => {
-        const cliente = pedido.NomeCliente || 'Cliente Desconhecido';
-        ordersByCustomer[cliente] = (ordersByCustomer[cliente] || 0) + 1;
-      });
-      
-      // Ordenar clientes por número de pedidos (maior para menor)
-      const sortedCustomers = Object.entries(ordersByCustomer)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 10); // Top 10 clientes
-      
-      const labels = sortedCustomers.map(item => {
-        const name = item[0];
-        return name.length > 12 ? name.substring(0, 12) + '...' : name;
-      });
-      const data = sortedCustomers.map(item => item[1]);
-      
-      // Destruir gráfico anterior se existir
-      if (ordersByCustomerChart) {
-        ordersByCustomerChart.destroy();
-      }
-      
-      // Criar novo gráfico
-      ordersByCustomerChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Número de Pedidos',
-            data: data,
-            backgroundColor: 'rgba(128, 90, 213, 0.7)',
-            borderColor: 'rgba(128, 90, 213, 1)',
-            borderWidth: 1,
-            borderRadius: 5,
-          }]
+    chartSatisfacao = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          data,
+          label: 'Satisfação dos Clientes',
+          backgroundColor: [
+            'rgba(239,68,68,0.7)',
+            'rgba(249,115,22,0.7)',
+            'rgba(234,179,8,0.7)',
+            'rgba(132,204,22,0.7)',
+            'rgba(34,197,94,0.7)'
+          ]
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { beginAtZero: true, ticks: { color: '#aaa' } },
+          x: { ticks: { color: '#aaa' } }
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              display: false
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              grid: {
-                color: 'rgba(255, 255, 255, 0.1)'
-              },
-              ticks: {
-                color: '#a0aec0',
-                stepSize: 1
-              }
-            },
-            x: {
-              grid: {
-                display: false
-              },
-              ticks: {
-                color: '#a0aec0'
-              }
-            }
-          }
-        }
-      });
-    }
-
-    // Criar gráfico de timeline
-    function createTimelineChart(pedidos) {
-      const ctx = document.getElementById('timelineChart').getContext('2d');
-      
-      // Agrupar pedidos por data
-      const ordersByDate = {};
-      pedidos.forEach(pedido => {
-        if (pedido.DataPedido) {
-          const date = new Date(pedido.DataPedido);
-          const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD
-          ordersByDate[dateStr] = (ordersByDate[dateStr] || 0) + 1;
-        }
-      });
-      
-      // Ordenar por data
-      const sortedDates = Object.entries(ordersByDate)
-        .sort(([dateA], [dateB]) => new Date(dateA) - new Date(dateB));
-      
-      const labels = sortedDates.map(([date]) => {
-        const d = new Date(date);
-        return `${d.getDate()}/${d.getMonth() + 1}`;
-      });
-      const data = sortedDates.map(([, count]) => count);
-      
-      // Destruir gráfico anterior se existir
-      if (timelineChart) {
-        timelineChart.destroy();
+        plugins: { legend: { display: false } }
       }
-      
-      // Criar novo gráfico
-      timelineChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Pedidos por Dia',
-            data: data,
-            backgroundColor: 'rgba(72, 187, 120, 0.2)',
-            borderColor: 'rgba(72, 187, 120, 1)',
-            borderWidth: 2,
-            tension: 0.4,
-            fill: true
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: {
-              beginAtZero: true,
-              grid: {
-                color: 'rgba(255, 255, 255, 0.1)'
-              },
-              ticks: {
-                color: '#a0aec0',
-                stepSize: 1
-              }
-            },
-            x: {
-              grid: {
-                color: 'rgba(255, 255, 255, 0.1)'
-              },
-              ticks: {
-                color: '#a0aec0'
-              }
-            }
-          }
+    });
+  }
+
+  // === GRÁFICO DE TIMELINE ===
+  function createChartTimeline(pedidos) {
+    const ctx = document.getElementById('timelineChart');
+    if (!ctx) return;
+
+    const porData = {};
+    pedidos.forEach(p => {
+      if (p.DataPedido) {
+        const d = new Date(p.DataPedido).toISOString().split('T')[0];
+        porData[d] = (porData[d] || 0) + 1;
+      }
+    });
+
+    const datas = Object.keys(porData).sort((a, b) => new Date(a) - new Date(b));
+    const valores = datas.map(d => porData[d]);
+
+    if (chartTimeline) chartTimeline.destroy();
+
+    chartTimeline = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: datas.map(d => {
+          const [y, m, day] = d.split('-');
+          return `${day}/${m}`;
+        }),
+        datasets: [{
+          label: 'Pedidos por Dia',
+          data: valores,
+          borderColor: 'rgba(72,187,120,1)',
+          backgroundColor: 'rgba(72,187,120,0.2)',
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { beginAtZero: true, ticks: { color: '#aaa' } },
+          x: { ticks: { color: '#aaa' } }
         }
-      });
-    }
-
-    // Preencher lista de pedidos recentes
-    function populateRecentOrders(pedidos) {
-      const ordersList = document.getElementById('ordersList');
-      ordersList.innerHTML = '';
-      
-      // Ordenar pedidos por data (mais recentes primeiro) e pegar os 5 mais recentes
-      const recentOrders = [...pedidos]
-        .sort((a, b) => new Date(b.DataPedido) - new Date(a.DataPedido))
-        .slice(0, 5);
-      
-      // Adicionar cada pedido à lista
-      recentOrders.forEach(pedido => {
-        const orderItem = document.createElement('div');
-        orderItem.className = 'order-item';
-        
-        // Formatar data
-        const dataFormatada = pedido.DataPedido ? 
-          new Date(pedido.DataPedido).toLocaleDateString('pt-BR') : 
-          'Data não disponível';
-        
-        // Formatar telefone
-        const telefoneFormatado = pedido.Telefone || 'Não informado';
-        
-        orderItem.innerHTML = `
-          <div class="order-info">
-            <h4>${pedido.NomeCliente || 'Cliente'}</h4>
-            <p>Pedido #${pedido.Id} • ${dataFormatada}</p>
-            <small>Tel: ${telefoneFormatado}</small>
-          </div>
-          <div style="display: flex; align-items: center; gap: 15px;">
-            <div class="status-badge status-completed">
-              Finalizado
-            </div>
-          </div>
-        `;
-        
-        ordersList.appendChild(orderItem);
-      });
-    }
-
-    // Atualizar insights
-    function updateInsights(pedidos) {
-      // Período de atividade
-      const dates = pedidos
-        .filter(p => p.DataPedido)
-        .map(p => new Date(p.DataPedido))
-        .sort((a, b) => a - b);
-      
-      if (dates.length > 0) {
-        const firstDate = dates[0];
-        const lastDate = dates[dates.length - 1];
-        const diffTime = Math.abs(lastDate - firstDate);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        
-        document.getElementById('activityPeriod').textContent = 
-          `${diffDays} dias de atividade registrada`;
       }
-      
-      // Clientes recorrentes
-      const customerOrders = {};
-      pedidos.forEach(pedido => {
-        const cliente = pedido.NomeCliente;
-        customerOrders[cliente] = (customerOrders[cliente] || 0) + 1;
-      });
-      
-      const repeatCustomers = Object.values(customerOrders).filter(count => count > 1).length;
-      document.getElementById('repeatCustomers').textContent = 
-        `${repeatCustomers} clientes fizeram múltiplos pedidos`;
-      
-      // Insight de localização
-      const uniqueAddresses = [...new Set(pedidos.map(p => p.Endereco))].length;
-      document.getElementById('locationInsight').textContent = 
-        `${uniqueAddresses} endereços de entrega distintos`;
-      
-      // Tendência de crescimento
-      const monthlyOrders = calculateOrdersByMonth(pedidos);
-      if (monthlyOrders.length >= 2) {
-        const growth = ((monthlyOrders[monthlyOrders.length - 1].count / monthlyOrders[0].count) - 1) * 100;
-        document.getElementById('growthTrend').textContent = 
-          `Crescimento de ${growth > 0 ? '+' : ''}${growth.toFixed(1)}% no período`;
-      } else {
-        document.getElementById('growthTrend').textContent = 'Dados insuficientes para análise de tendência';
-      }
-    }
+    });
+  }
 
-    // Funções para gerenciar estados de UI
-    function showLoading() {
-      document.getElementById('loadingIndicator').style.display = 'flex';
-      document.getElementById('dashboardContent').style.opacity = '0.5';
-    }
+  // === PEDIDOS RECENTES ===
+  function populateRecentOrders(pedidos) {
+    const list = document.getElementById('ordersList');
+    if (!list) return;
 
-    function hideLoading() {
-      document.getElementById('loadingIndicator').style.display = 'none';
-      document.getElementById('dashboardContent').style.opacity = '1';
-    }
+    list.innerHTML = '';
+    const recent = pedidos.sort((a,b) => new Date(b.DataPedido) - new Date(a.DataPedido)).slice(0,5);
 
-    function showError(title, message, details = '') {
-      const errorContainer = document.getElementById('errorContainer');
-      errorContainer.innerHTML = `
-        <div class="error-message">
-          <h3>${title}</h3>
-          <p>${message}</p>
-          ${details ? `<div class="debug-info">Detalhes: ${details}</div>` : ''}
-          <p><small>Certifique-se de que o arquivo "${JSON_CONFIG.filename}" existe no mesmo diretório.</small></p>
+    recent.forEach(p => {
+      const item = document.createElement('div');
+      item.className = 'order-item';
+      item.innerHTML = `
+        <div class="order-info">
+          <h4>${p.NomeCliente || 'Cliente'}</h4>
+          <p>Pedido #${p.Id || '?'} • ${p.DataPedido || 'Data indefinida'}</p>
+          <small>Tel: ${p.Telefone || 'Não informado'}</small>
         </div>
+        <div class="status-badge status-completed">Finalizado</div>
       `;
+      list.appendChild(item);
+    });
+  }
+
+  // === INSIGHTS ===
+  function updateInsights(pedidos) {
+    const datas = pedidos
+      .filter(p => p.DataPedido)
+      .map(p => new Date(p.DataPedido))
+      .sort((a,b) => a - b);
+
+    if (datas.length > 1) {
+      const diff = (datas[datas.length - 1] - datas[0]) / (1000 * 60 * 60 * 24);
+      document.getElementById('activityPeriod').textContent = `${Math.ceil(diff)} dias de atividade`;
     }
 
-    function hideError() {
-      document.getElementById('errorContainer').innerHTML = '';
-    }
-  </script>
+    const repetidos = {};
+    pedidos.forEach(p => repetidos[p.NomeCliente] = (repetidos[p.NomeCliente] || 0) + 1);
+    const clientesRepetidos = Object.values(repetidos).filter(v => v > 1).length;
+    document.getElementById('repeatCustomers').textContent = `${clientesRepetidos} clientes recorrentes`;
+
+    const enderecos = new Set(pedidos.map(p => p.Endereco)).size;
+    document.getElementById('locationInsight').textContent = `${enderecos} endereços distintos`;
+  }
+
+  // === UI AUX ===
+  function showLoading() {
+    const el = document.getElementById('loadingIndicator');
+    if (el) el.style.display = 'flex';
+  }
+
+  function hideLoading() {
+    const el = document.getElementById('loadingIndicator');
+    if (el) el.style.display = 'none';
+  }
+
+  function showError(title, message, details = '') {
+    const el = document.getElementById('errorContainer');
+    if (!el) return;
+    el.innerHTML = `
+      <div class="error-message">
+        <h3>${title}</h3>
+        <p>${message}</p>
+        ${details ? `<div class="debug-info">Detalhes: ${details}</div>` : ''}
+        <p><small>Verifique se "${JSON_FILE}" está no mesmo diretório.</small></p>
+      </div>
+    `;
+  }
+
+  function hideError() {
+    const el = document.getElementById('errorContainer');
+    if (el) el.innerHTML = '';
+  }
+</script>
+
 </body>
 </html>
